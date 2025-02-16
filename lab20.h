@@ -12,8 +12,14 @@ class Equipment{
 	int atk;
 	int def;
 	public:
-		Equipment(int,int,int);
-		vector<int> getStat();			
+		Equipment(int h,int a,int d){
+            hpmax = h;
+            atk = a;
+            def = d;
+        }
+		vector<int> getStat(){
+            return {hpmax, atk, def};
+        }		
 };
 
 class Unit{
@@ -73,7 +79,8 @@ void Unit::showStatus(){
 }
 
 void Unit::newTurn(){
-	guard_on = false; 
+	guard_on = false;
+    dodge_on = false;
 }
 
 int Unit::beAttacked(int oppatk){
@@ -81,7 +88,19 @@ int Unit::beAttacked(int oppatk){
 	if(oppatk > def){
 		dmg = oppatk-def;	
 		if(guard_on) dmg = dmg/3;
-	}	
+	}
+    if(dodge_on){ 
+		if(rand() % 2 == 0){
+			dmg = 0;
+		}else{
+			dmg = (oppatk - def) * 2;
+		}
+	}else{
+		if(oppatk > def){
+			dmg = oppatk - def;
+			if(guard_on) dmg = dmg / 3;
+		}
+	}
 	hp -= dmg;
 	if(hp <= 0){hp = 0;}
 	
@@ -90,6 +109,12 @@ int Unit::beAttacked(int oppatk){
 
 int Unit::attack(Unit &opp){
 	return opp.beAttacked(atk);
+}
+
+int Unit::ultimateAttack(Unit &opp){ 
+    int ultimateATK = atk*2;
+    return opp.beAttacked(ultimateATK);
+    
 }
 
 int Unit::heal(){
@@ -103,10 +128,32 @@ void Unit::guard(){
 	guard_on = true;
 }	
 
+void Unit::dodge(){
+    dodge_on = true;
+}
+
 bool Unit::isDead(){
 	if(hp <= 0) return true;
 	else return false;
 }
+
+void Unit::equip(Equipment *equip){
+    if(equipment != NULL){
+        vector<int> oldStats = equipment->getStat();
+        hpmax -= oldStats[0];
+        atk -= oldStats[1];
+        def -= oldStats[2];
+    }
+    equipment = equip;
+    vector<int> newStats = equip->getStat();
+    hpmax += newStats[0];
+    atk += newStats[1];
+    def += newStats[2];
+
+    if(hp > hpmax) hp = hpmax;
+}
+
+ 
 
 void drawScene(char p_action,int p,char m_action,int m){
 	cout << "                                                       \n";
@@ -167,4 +214,3 @@ void playerLose(){
 	cout << "*                                                     *\n";
 	cout << "*******************************************************\n";
 };
-
